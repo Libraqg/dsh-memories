@@ -14,10 +14,16 @@ tools to look up the details. It is a port of the memory pipeline in
 [OpenAI Codex](https://github.com/openai/codex), with the same prompts, limits
 and file layout.
 
+> [!WARNING]
+> **Beta.** This is an early release, tested by one person on macOS with a
+> release candidate of dsh. Expect bugs, and expect behaviour and settings to
+> change between versions. Please report problems in
+> [Issues](https://github.com/Libraqg/dsh-memories/issues).
+
 ## Install
 
-Requires dsh 0.2.2 or later, Node.js 22.19 or later (the version dsh needs)
-and `git` on your `PATH`.
+Requires dsh 0.2.2-rc.1 or a later 0.2.x release, Node.js 24.9 or later (the
+version dsh needs) and `git` on your `PATH`.
 
 ```bash
 dsh plugin --profile web add @libraqg/dsh-memories
@@ -59,7 +65,7 @@ right away.
 ### Choose the models
 
 Open the plugin's settings in the plugin manager. Pick an **extraction model**
-(runs once per session, a fast model is enough) and a **consolidation model**
+(runs once for each idle session, a fast model is enough) and a **consolidation model**
 (runs the merge, a stronger model helps). Changes apply without a restart.
 
 | Setting | Default |
@@ -89,7 +95,7 @@ Other options go in the plugin's row of the profile's `cordis.patch.yml`.
 
 | Option | Default | Meaning |
 |---|---|---|
-| `memoryRoot` | `$DSH_HOME/memories` (`~/.dsh/memories`) | Memory folder |
+| `memoryRoot` | `$DSH_HOME/memories` (`~/.dsh/memories`) | Memory folder. Must be a folder used only by this plugin: it replaces any `.git` in it, removes symlinks and `/memories reset` deletes everything in it |
 | `stateDbPath` | beside the memory folder | SQLite state database |
 | `generateMemories` | `true` | Extract and merge new memories |
 | `useMemories` | `true` | Give agents the summary and the memory tools |
@@ -137,9 +143,10 @@ from Codex.
   provider, and the extracted memories to the consolidation model's provider.
   Secrets that look like API keys and tokens are redacted first, as in Codex.
   Sessions of subagents and of the plugin itself are skipped.
-- **Files:** writes only inside the memory folder and the state database. The
-  consolidation agent's file tools refuse any path outside the memory folder;
-  its other tools are disabled.
+- **Files:** writes only inside the memory folder, plus a `.lock` file next to
+  it and the state database with its `-wal` and `-shm` files. The
+  consolidation agent's file tools refuse any path outside the memory folder
+  and inside its `.git`; its other tools are disabled.
 - **Commands:** runs `git` on the memory folder only, without your git
   config or hooks.
 - **What it adds to dsh:** four agent tools, one system-prompt section, the

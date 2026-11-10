@@ -10,9 +10,12 @@
 
 dsh-memories 在后台读取你已经结束的会话，留下值得记住的内容，再把一份简短的记忆摘要交给每个新 agent，并提供查阅细节的工具。它移植自 [OpenAI Codex](https://github.com/openai/codex) 的记忆流水线，提示词、各项限制和文件结构都与 Codex 相同。
 
+> [!WARNING]
+> **测试版。** 这是早期版本，只由一个人在 macOS 上配合 dsh 的候选发布版测试过，可能会出现一些 bug，各版本之间的行为和设置也可能变化。遇到问题请到 [Issues](https://github.com/Libraqg/dsh-memories/issues) 反馈。
+
 ## 安装
 
-需要 dsh 0.2.2 或更高版本、Node.js 22.19 或更高版本（dsh 本身也需要），以及 `PATH` 里有 `git`。
+需要 dsh 0.2.2-rc.1 或之后的 0.2.x 版本、Node.js 24.9 或更高版本（dsh 本身也需要），以及 `PATH` 里有 `git`。
 
 ```bash
 dsh plugin --profile web add @libraqg/dsh-memories
@@ -46,7 +49,7 @@ dsh plugin --profile web add link:/absolute/path/to/dsh-memories
 
 ### 选择模型
 
-在插件管理器里打开本插件的设置。选一个**提取模型**（每个会话跑一次，快的模型就够）和一个**合并模型**（负责合并，强一些的模型效果更好）。改动不用重启就生效。
+在插件管理器里打开本插件的设置。选一个**提取模型**（每个闲置的会话跑一次，快的模型就够）和一个**合并模型**（负责合并，强一些的模型效果更好）。改动不用重启就生效。
 
 | 设置 | 默认值 |
 |---|---|
@@ -74,7 +77,7 @@ dsh 里配置过的任何 provider 都能用，包括已登录的订阅账号。
 
 | 选项 | 默认值 | 含义 |
 |---|---|---|
-| `memoryRoot` | `$DSH_HOME/memories`（`~/.dsh/memories`） | 记忆文件夹 |
+| `memoryRoot` | `$DSH_HOME/memories`（`~/.dsh/memories`） | 记忆文件夹。必须是本插件专用的文件夹：插件会替换其中的 `.git`、删除符号链接，`/memories reset` 会清空它 |
 | `stateDbPath` | 记忆文件夹旁边 | SQLite 状态数据库 |
 | `generateMemories` | `true` | 提取和合并新记忆 |
 | `useMemories` | `true` | 给 agent 提供摘要和记忆工具 |
@@ -115,7 +118,7 @@ dsh 里配置过的任何 provider 都能用，包括已登录的订阅账号。
 ## 权限与风险
 
 - **会发送什么：** 会话内容会发给提取模型的 provider，提取出的记忆会发给合并模型的 provider。和 Codex 一样，看起来像 API key 和 token 的密钥会先被脱敏。子 agent 的会话和插件自己的会话会被跳过。
-- **文件：** 只写记忆文件夹和状态数据库。合并 agent 的文件工具会拒绝记忆文件夹以外的任何路径，它的其他工具都被禁用。
+- **文件：** 只写记忆文件夹，外加它旁边的一个 `.lock` 文件，以及状态数据库和它的 `-wal`、`-shm` 文件。合并 agent 的文件工具会拒绝记忆文件夹以外的路径和其中 `.git` 里的路径，它的其他工具都被禁用。
 - **命令：** 只在记忆文件夹上运行 `git`，不使用你的 git 配置和 hooks。
 - **给 dsh 增加了什么：** 四个 agent 工具、一段系统提示、`/memories` 命令、一个设置页，以及每次合并留下的一个隐藏子 agent 会话。
 - **模型用量：** 每个会话提取一次，即一次模型调用；每次合并是一次 agent 运行。不用 dsh 的时候什么都不会运行。
