@@ -1,0 +1,79 @@
+{
+  "name": "@libraqg/dsh-memories",
+  "version": "0.1.0",
+  "description": "Long-term memory for DeepSeek Harness: learns from past sessions in the background and gives new agents a short memory summary. A port of the OpenAI Codex memory pipeline.",
+  "type": "module",
+  "license": "Apache-2.0",
+  "author": "libraqg",
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "memory",
+    "long-term-memory",
+    "codex"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Libraqg/dsh-memories.git"
+  },
+  "homepage": "https://github.com/Libraqg/dsh-memories#readme",
+  "bugs": {
+    "url": "https://github.com/Libraqg/dsh-memories/issues"
+  },
+  "engines": {
+    "node": ">=22.19.0",
+    "dsh": ">=0.2.2-rc.1 <0.3.0-0"
+  },
+  "exports": {
+    ".": "./adapters/dsh/index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "adapters",
+    "core",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "docs/DESIGN.md",
+    "README.md",
+    "README.zh.md",
+    "NOTICE.md",
+    "LICENSE"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-plugin-manager",
+        "@deepseek-ai/dsh-client-ui-settings"
+      ]
+    },
+    "compatibility": {
+      "dsh": ">=0.2.2-rc.1 <0.3.0-0",
+      "tested": [
+        "0.2.2-rc.1"
+      ]
+    }
+  },
+  "scripts": {
+    "test": "node --test \"test/**/*.test.js\"",
+    "check:boundaries": "node scripts/check-boundaries.js",
+    "dev:extract": "node scripts/dev-run.js",
+    "prepublishOnly": "npm test"
+  },
+  "dependencies": {
+    "@deepseek-ai/schemastery": "3.19.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

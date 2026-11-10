@@ -1,0 +1,2 @@
+{"type":"session","version":4,"id":"session-empty","createdAt":1794038400000,"cwd":"/tmp/project-beta","isSeeded":false,"delegationDepth":0}
+{"type":"user/message","seq":1,"time":1794042000000,"data":{"id":"u0","role":"user","content":[{"type":"text","text":"# Project rules"}],"source":{"kind":"agent-instructions","form":"baseline"}}}

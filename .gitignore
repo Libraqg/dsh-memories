@@ -1,0 +1,8 @@
+.DS_Store
+node_modules/
+*.sqlite
+*.sqlite-wal
+*.sqlite-shm
+
+# Private working notes; the public design summary is docs/DESIGN.md
+docs/phase1-design.md
