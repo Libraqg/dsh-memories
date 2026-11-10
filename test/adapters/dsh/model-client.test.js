@@ -3,6 +3,7 @@ import { test } from 'node:test'
 
 import { createDshModelClient } from '../../../adapters/dsh/model-client.js'
 import { ModelRouteUnavailableError } from '../../../core/ports.js'
+import { keepEventLoopAlive } from '../../helpers/fakes.js'
 
 const ROUTE = { provider: 'deepseek-official', model: 'deepseek-flash' }
 
@@ -68,7 +69,8 @@ test('an output-capped response is a failure, not a partial memory', async () =>
   await assert.rejects(createDshModelClient({ llm }).complete(request()), /max-tokens/)
 })
 
-test('calls time out, so a closed subscription window cannot hang a job', async () => {
+test('calls time out, so a closed subscription window cannot hang a job', async (t) => {
+  keepEventLoopAlive(t)
   const llm = stubLlm({
     stream: async function* (options) {
       await new Promise((resolve) => options.signal.addEventListener('abort', resolve, { once: true }))

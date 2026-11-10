@@ -3,7 +3,7 @@ import { mkdir, readFile, readdir, stat, symlink, writeFile } from 'node:fs/prom
 import { join } from 'node:path'
 import { test } from 'node:test'
 
-import { CURRENT_THREAD, EXTRACT_ROUTE, WORKSPACE_DIFF, memoryJson, pipelineHarness, thread, writeValidArtifacts } from '../helpers/fakes.js'
+import { CURRENT_THREAD, EXTRACT_ROUTE, WORKSPACE_DIFF, keepEventLoopAlive, memoryJson, pipelineHarness, thread, writeValidArtifacts } from '../helpers/fakes.js'
 
 const CONSOLIDATION_ROUTE = { provider: 'test-sub', model: 'strong' }
 
@@ -137,7 +137,8 @@ test('a symlink left by the agent fails validation and is removed', async () => 
   assert.equal((await readdir(rootOf(harness))).includes('escape.md'), false)
 })
 
-test('losing the lease aborts the agent and never resets the baseline', async () => {
+test('losing the lease aborts the agent and never resets the baseline', async (t) => {
+  keepEventLoopAlive(t)
   const harness = await setup({
     deps: { heartbeatMs: 5 },
     runnerAct: ({ signal }) => new Promise((resolve) => signal.addEventListener('abort', () => resolve({ status: 'failed', error: 'aborted' }), { once: true })),

@@ -8,6 +8,16 @@ import { fileURLToPath } from 'node:url'
 
 import { MemoryStore, resolveMemoriesConfig, runMemoryPipeline } from '../../core/index.js'
 
+/**
+ * Timeout signals and the heartbeat timer are unref'd. On Node 22 the test
+ * runner cancels a test whose only pending work is such a timer, so tests
+ * that wait on one hold the event loop open until they finish.
+ */
+export function keepEventLoopAlive(t) {
+  const handle = setInterval(() => {}, 1_000)
+  t.after(() => clearInterval(handle))
+}
+
 export const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url))
 export const CURRENT_THREAD = 'test:current'
 

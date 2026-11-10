@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import { test } from 'node:test'
 
 import { createDshConsolidationRunner, withoutWorkspaceInstructions } from '../../../adapters/dsh/consolidation-runner.js'
+import { keepEventLoopAlive } from '../../helpers/fakes.js'
 
 function stubCtx({ turnEnd = { kind: 'completed' }, idle = Promise.resolve(), efforts = [{ id: 'medium' }] } = {}) {
   const state = { created: undefined, policy: undefined, followups: [], restricted: undefined, tools: [], appended: [], disposed: false, cancelled: undefined }
@@ -94,7 +95,8 @@ test('losing the job cancels the agent and still disposes it', async () => {
   assert.equal(state.disposed, true)
 })
 
-test('a run that never finishes times out', async () => {
+test('a run that never finishes times out', async (t) => {
+  keepEventLoopAlive(t)
   const { ctx, state } = stubCtx({ idle: new Promise(() => {}) })
   const result = await createDshConsolidationRunner(ctx, { timeoutMs: 10 }).run(await request())
   assert.equal(result.status, 'failed')
