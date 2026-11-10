@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
+import { homedir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
 import vm from 'node:vm'
@@ -28,6 +29,13 @@ test('model routes are volatile and resolve to the defaults when unset', () => {
   const config = resolveDshConfig(readConfigSnapshot(value))
   assert.deepEqual(config.extractModel, { provider: 'deepseek-official', model: 'deepseek-flash' })
   assert.deepEqual(config.consolidationModel, { provider: 'deepseek-official', model: 'deepseek-v4-pro' })
+})
+
+test('configured paths expand ~ and become absolute without a trailing slash', () => {
+  const config = resolveDshConfig({ memoryRoot: '~/mem/', stateDbPath: '~/state.sqlite' })
+  assert.equal(config.memoryRoot, join(homedir(), 'mem'))
+  assert.equal(config.stateDbPath, join(homedir(), 'state.sqlite'))
+  assert.equal(resolveDshConfig({ memoryRoot: '/data/mem//' }).memoryRoot, '/data/mem')
 })
 
 test('a changed volatile route is seen on the next read', () => {

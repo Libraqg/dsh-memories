@@ -18,6 +18,14 @@ function isInside(root, target) {
   return path === '' || (path !== '..' && !path.startsWith(`..${sep}`) && !isAbsolute(path))
 }
 
+/**
+ * True for any spelling the filesystem may resolve to `.git`: case-insensitive
+ * volumes (macOS, Windows) accept `.GIT`, and Windows drops trailing dots and spaces.
+ */
+function isGitDirectoryName(part) {
+  return part.replace(/[. ]+$/u, '').toLowerCase() === '.git'
+}
+
 async function refuseSymlinks(root, target) {
   let current = root
   for (const part of relative(root, target).split(sep).filter(Boolean)) {
@@ -39,7 +47,7 @@ async function confine(roots, requested) {
   const absolute = resolve(roots[0], requested)
   const root = roots.find((candidate) => isInside(candidate, absolute))
   if (root === undefined) throw new MemoryToolError(`path is outside the memory root: ${requested}`)
-  if (relative(root, absolute).split(sep).includes('.git')) throw new MemoryToolError('the memory baseline repository is off limits')
+  if (relative(root, absolute).split(sep).some(isGitDirectoryName)) throw new MemoryToolError('the memory baseline repository is off limits')
   await refuseSymlinks(root, absolute)
   return { root, absolute }
 }

@@ -1,7 +1,7 @@
 // Resolves the plugin's row configuration into the core's configuration.
 
 import { homedir } from 'node:os'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
 
 import { createExternalKnowledgePolicy, resolveMemoriesConfig } from '../../core/index.js'
 
@@ -30,6 +30,12 @@ function expandHome(path) {
   return path === '~' || path.startsWith('~/') ? join(homedir(), path.slice(1)) : path
 }
 
+/** A configured path as an absolute path without a trailing separator. */
+function configuredPath(value) {
+  const path = nonEmpty(value)
+  return path === undefined ? undefined : resolve(expandHome(path))
+}
+
 /**
  * The knowledge base kept out of generated memory, if one is configured.
  * Reading `sessionExcludedPaths` removes the whole session; reading anything
@@ -47,8 +53,8 @@ export function resolveExternalKnowledgePolicy(raw = {}) {
 export function resolveDshConfig(raw = {}) {
   return resolveMemoriesConfig({
     ...raw,
-    memoryRoot: nonEmpty(raw.memoryRoot) ?? join(dshHome(), 'memories'),
-    stateDbPath: nonEmpty(raw.stateDbPath),
+    memoryRoot: configuredPath(raw.memoryRoot) ?? join(dshHome(), 'memories'),
+    stateDbPath: configuredPath(raw.stateDbPath),
     extractModel: route(raw.extractModel, DEFAULT_EXTRACT_MODEL),
     consolidationModel: route(raw.consolidationModel, DEFAULT_CONSOLIDATION_MODEL),
   })

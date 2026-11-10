@@ -56,6 +56,13 @@ test('no tool can leave the root, touch .git, or follow a symlink', async () => 
   await refused(tools.write.execute({ file_path: `${root}-evil/x.md`, content: 'x' }), /outside/)
   await refused(tools.write.execute({ file_path: '.git/config', content: 'x' }), /off limits/)
   await refused(tools.edit.execute({ file_path: join(root, '.git/config'), old_string: 'n', new_string: 'x' }), /off limits/)
+  // Case-insensitive volumes resolve these to the real .git directory.
+  await refused(tools.write.execute({ file_path: '.GIT/config', content: 'x' }), /off limits/)
+  await refused(tools.read.execute({ file_path: '.Git/config' }), /off limits/)
+  await refused(tools.write.execute({ file_path: 'a/../.git./config', content: 'x' }), /off limits/)
+  await refused(tools.write.execute({ file_path: '.git /config', content: 'x' }), /off limits/)
+  assert.equal(await readFile(join(root, '.git', 'config'), 'utf8'), 'needle')
+  await tools.write.execute({ file_path: '.github-notes.md', content: 'x' })
   await refused(tools.grep.execute({ pattern: 'needle', path: '/etc' }), /outside/)
   await refused(tools.glob.execute({ pattern: '../*' }), /inside/)
   await refused(tools.glob.execute({ pattern: '/etc/*' }), /inside/)
