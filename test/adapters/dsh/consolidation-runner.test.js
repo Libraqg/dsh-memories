@@ -1,11 +1,9 @@
 import assert from 'node:assert/strict'
-import { mkdtemp, realpath } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { realpath } from 'node:fs/promises'
 import { test } from 'node:test'
 
 import { createDshConsolidationRunner, withoutWorkspaceInstructions } from '../../../adapters/dsh/consolidation-runner.js'
-import { keepEventLoopAlive } from '../../helpers/fakes.js'
+import { keepEventLoopAlive, makeTempDir } from '../../helpers/fakes.js'
 
 function stubCtx({ turnEnd = { kind: 'completed' }, idle = Promise.resolve(), efforts = [{ id: 'medium' }] } = {}) {
   const state = { created: undefined, policy: undefined, followups: [], restricted: undefined, tools: [], appended: [], disposed: false, cancelled: undefined }
@@ -40,7 +38,7 @@ function stubCtx({ turnEnd = { kind: 'completed' }, idle = Promise.resolve(), ef
 }
 
 async function request(extra = {}) {
-  const root = await mkdtemp(join(tmpdir(), 'runner-'))
+  const root = await makeTempDir('runner-')
   return { root, prompt: 'consolidate', route: { provider: 'deepseek-official', model: 'deepseek-v4-pro' }, reasoningEffort: 'medium', currentThreadId: 'dsh:session-parent', signal: new AbortController().signal, ...extra }
 }
 

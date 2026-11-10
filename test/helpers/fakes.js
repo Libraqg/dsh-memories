@@ -1,6 +1,7 @@
 // Shared test doubles. The in-memory source and model double as the second
 // adapter that keeps the core's port boundary honest.
 
+import { rmSync } from 'node:fs'
 import { cp, mkdtemp, readFile, readdir, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -16,6 +17,23 @@ import { MemoryStore, resolveMemoriesConfig, runMemoryPipeline } from '../../cor
 export function keepEventLoopAlive(t) {
   const handle = setInterval(() => {}, 1_000)
   t.after(() => clearInterval(handle))
+}
+
+const tempDirs = new Set()
+
+/**
+ * A fresh directory under the OS temp folder, removed when the process exits.
+ * `node --test` runs each file in its own process, so nothing outlives a test file.
+ */
+export async function makeTempDir(prefix) {
+  if (tempDirs.size === 0) {
+    process.once('exit', () => {
+      for (const dir of tempDirs) rmSync(dir, { recursive: true, force: true })
+    })
+  }
+  const dir = await mkdtemp(join(tmpdir(), prefix))
+  tempDirs.add(dir)
+  return dir
 }
 
 export const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url))
@@ -34,7 +52,7 @@ export function fakeClock(startMs = FIXTURE_NOW_MS) {
 
 /** A scratch memory root seeded from fixtures/test-vault, so the fixture stays pristine. */
 export async function tempMemoryRoot() {
-  const base = await mkdtemp(join(tmpdir(), 'memories-test-'))
+  const base = await makeTempDir('memories-test-')
   const memoryRoot = join(base, 'memories')
   await cp(join(REPO_ROOT, 'fixtures/test-vault'), memoryRoot, { recursive: true })
   return { memoryRoot, stateDbPath: join(base, 'memories_state.sqlite') }

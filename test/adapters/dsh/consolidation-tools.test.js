@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict'
-import { mkdir, mkdtemp, readFile, realpath, stat, symlink, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
+import { mkdir, readFile, realpath, stat, symlink, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { test } from 'node:test'
 
 import { consolidationToolDefinitions, globToRegExp } from '../../../adapters/dsh/consolidation-tools.js'
 import { MemoryToolError } from '../../../core/index.js'
+import { makeTempDir } from '../../helpers/fakes.js'
 
 async function setup() {
-  const base = await realpath(await mkdtemp(join(tmpdir(), 'consolidation-tools-')))
+  const base = await realpath(await makeTempDir('consolidation-tools-'))
   const root = join(base, 'memories')
   await mkdir(join(root, 'rollout_summaries'), { recursive: true })
   await mkdir(join(root, '.git'))

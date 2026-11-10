@@ -1,16 +1,16 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
-import { mkdir, mkdtemp, rm, truncate, writeFile } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
+import { mkdir, rm, truncate, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { test } from 'node:test'
 
 import { diffSinceLatestInit, ensureGitBaselineRepository, resetGitRepository } from '../../core/git-baseline.js'
+import { makeTempDir } from '../helpers/fakes.js'
 
 const ELEVEN_MIB = 11 * 1024 * 1024
 
 async function workspace() {
-  const root = await mkdtemp(join(tmpdir(), 'baseline-'))
+  const root = await makeTempDir('baseline-')
   await writeFile(join(root, 'a.md'), 'one\n')
   return root
 }

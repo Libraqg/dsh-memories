@@ -1,11 +1,10 @@
 import assert from 'node:assert/strict'
-import { readFile, readdir, symlink, writeFile, mkdtemp, mkdir } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
+import { readFile, readdir, symlink, writeFile, mkdir } from 'node:fs/promises'
 import { join } from 'node:path'
 import { test } from 'node:test'
 
 import { ensureLayout, rebuildRawMemoriesFile, rolloutSummaryFileStem, syncRolloutSummaries } from '../../core/storage.js'
-import { tempMemoryRoot } from '../helpers/fakes.js'
+import { makeTempDir, tempMemoryRoot } from '../helpers/fakes.js'
 
 const memory = (overrides = {}) => ({
   threadId: 'dsh:session-alpha',
@@ -57,7 +56,7 @@ test('summary sync writes the header and prunes unselected files', async () => {
 })
 
 test('layout refuses a symlinked root and removes symlinks inside it', async () => {
-  const base = await mkdtemp(join(tmpdir(), 'memories-link-'))
+  const base = await makeTempDir('memories-link-')
   const target = join(base, 'target')
   await mkdir(target)
   await symlink(target, join(base, 'link'))
